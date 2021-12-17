@@ -1,0 +1,29 @@
+# Creates all the datasets
+#python data_parser.py -f hic_datasets/GM12878/GSE63525_GM12878_insitu_primary_30.hic -o chromosome_files/GM12878_rao_et_al/ -v
+#python data_parser.py -f hic_datasets/IMR90/GSE63525_IMR90_combined_30.hic -o chromosome_files/IMR90_rao_et_al/ -v
+#python data_parser.py -f hic_datasets/K562/GSE63525_K562_combined_30.hic -o chromosome_files/K562_rao_et_al/ -v
+
+#python data_parser.py -f hic_datasets/GM12878/ENCFF799QGA.hic -o chromosome_files/GM12878_encode0/ -v
+#python data_parser.py -f hic_datasets/GM12878/ENCFF473CAA.hic -o chromosome_files/GM12878_encode1/ -v
+#python data_parser.py -f hic_datasets/GM12878/ENCFF227XJZ.hic -o chromosome_files/GM12878_encode2/ -v
+#python data_parser.py -f hic_datasets/IMR90/GSM1551606_HIC057_30.hic -o chromosome_files/IMR90_hic057/ -v
+#python data_parser.py -f hic_datasets/K562/GSM1551622_HIC073_30.hic -o chromosome_files/K562_hic073/ -v
+
+
+
+# Create dataset files
+#python dataset_creator.py -b chromosome_files/GM12878_encode0/ -t chromosome_files/GM12878_rao_et_al -o datasets_copy/real/ -n gm12878-encode0-raoetal \
+#--chunk 269 --stride 257 --cutoff-base 90 --cutoff-target 255 -d all -v
+
+#python dataset_creator.py -b chromosome_files/GM12878_encode1/ -t chromosome_files/GM12878_rao_et_al -o datasets_copy/real/ -n gm12878-encode1-raoetal \
+#--chunk 269 --stride 257 --cutoff-base 90 --cutoff-target 255 -d all -v
+
+#python dataset_creator.py -b chromosome_files/GM12878_encode2/ -t chromosome_files/GM12878_rao_et_al -o datasets_copy/real/ -n gm12878-encode2-raoetal \
+#--chunk 269 --stride 257 --cutoff-base 90 --cutoff-target 255 -d all -v
+
+#python dataset_creator.py -b chromosome_files/IMR90_hic057/ -t chromosome_files/IMR90_rao_et_al -o datasets_copy/real/ -n imr90-hic057-raoetal \
+#--chunk 269 --stride 257 --cutoff-base 90 --cutoff-target 255 -d all -v
+
+#python dataset_creator.py -b chromosome_files/K562_hic073/ -t chromosome_files/K562_rao_et_al -o datasets_copy/real/ -n k562-hic073-raoetal \
+#--chunk 269 --stride 257 --cutoff-base 90 --cutoff-target 255 -d all -v
+
