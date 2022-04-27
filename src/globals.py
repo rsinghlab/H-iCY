@@ -1,7 +1,7 @@
 """
     Path to the data directory that contains all the .hic files and will contain all the generated files
 """
-DATA_DIRECTORY = '/media/murtaza/ubuntu/updated_hic_data/'
+DATA_DIRECTORY = '/media/murtaza/ubuntu/updated_hic_data/data/'
 TEMP_DATA_DIRECTORY = '/home/murtaza/Documents/hic_upscaling_evaluation/temp/'
 QC_PARAMETERS_FILE = '/media/murtaza/ubuntu/updated_hic_data/data/3dqc_config/parameters.txt'
 """
@@ -35,6 +35,7 @@ CUTOFF_PERCENTILE = 99.95
 '''
 dataset_cutoff_values = {
     'GM12878_rao_et_al': 255,
+    'GM12878_rao_et_al_replicate': 255,
     'IMR90_rao_et_al': 255,
     'K562_rao_et_al': 255,
     'downsampled_8': 140,
@@ -45,7 +46,8 @@ dataset_cutoff_values = {
     'GM12878_encode0': 90,
     'GM12878_encode1': 87,
     'GM12878_encode2': 96,
-    'GM12878_hic033': 29,    
+    'GM12878_hic026': 143,  
+    'GM12878_hic033': 29, 
     'IMR90_hic057': 68,   
     'K562_hic073': 28,
     'deeplearning_upscaled': 255

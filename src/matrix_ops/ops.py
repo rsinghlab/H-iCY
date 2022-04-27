@@ -189,3 +189,49 @@ def matrix_division(chr_num, matrix_file_path, cut_off,
     divided_matrices, indexes = divide(matrix_data, chr_num, chunk, stride, bound, verbose=verbose)
 
     return divided_matrices, indexes
+
+
+
+
+def normalize(matrix_file_path, cut_off, compact_idxs=[], compact=True, verbose=False):
+    """
+        Matrix Division, divides a NxN matrix into smaller matrices with defined coverage around them
+        @params: matrix_file_path <string> path to the stored matrix
+        @params: cut_off <int> Preprocessing of matrix 
+        @params: compact <bool> To remove empty rows or not
+        @params: verbose <boo> Show print statements
+        @returns <np.array> A normalized matrix 
+    """
+
+    
+    matrix_data = np.load(matrix_file_path, allow_pickle=True)
+    
+    if compact_idxs == []:
+        compact_idxs = matrix_data['compact']
+    
+    hic_data_key = list(filter(lambda x: 'hic' in x ,list(matrix_data.keys())))[0]
+
+    full_size = matrix_data[hic_data_key].shape
+    
+    if verbose: print("Read a matrix of size: {}".format(full_size))
+    if verbose: print("Number of compact indices: {}".format(len(compact_idxs)))
+    
+    # Compaction
+    matrix_data = matrix_data[hic_data_key]
+    
+    if compact:
+        matrix_data = compactM(matrix_data, compact_idxs)
+
+    if verbose: print("Matrix has max: {} and min: {}".format(np.max(matrix_data), np.min(matrix_data)))
+
+    if verbose: 
+        print("Clamping and rescaling with cutoff value: {}".format(cut_off))
+    
+    #Clamping
+    matrix_data = np.minimum(cut_off, matrix_data)
+    matrix_data = np.maximum(matrix_data, 0)
+
+    #Rescaling
+    matrix_data = matrix_data / np.max(matrix_data)
+
+    return matrix_data

@@ -73,8 +73,6 @@ def read_hic_header(hicfile):
 
 
 def matrix_extract(chrN1, chrN2, binsize, hicfile, normalization='KR'):
-    print(binsize)
-
     result, norms = straw.straw(normalization, hicfile, str(chrN1), str(chrN2), 'BP', binsize)
         
     compact_idx_norm_x = list(np.where(np.isnan(norms[0])^True)[0])

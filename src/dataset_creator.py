@@ -47,9 +47,13 @@ def dataset_divider(chromosome_id,
                     ):
 
     # Loading the datafiles
-    base_data = np.load(base_file)
-    target_data = np.load(target_file)
-    
+    try:
+        base_data = np.load(base_file)
+        target_data = np.load(target_file)
+    except: 
+        # If the files do not exist
+        return -1 
+
     # For compact indices, there are three different ways this can go. 
     # 1) Completely ignore compact indices (Models might not work correctly with missing values in matrices)
     # 2) Take an intersection of compact indices and use them as default (default, seems to have smallest impact on comparisons down the line)

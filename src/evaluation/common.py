@@ -118,7 +118,22 @@ def evaluate(result_name,
             with open('results/{}.txt'.format(result_name), 'a+') as f:
                 f.write(analysis_results)
 
-        
+        if 'insulation_score' in steps:
+            print("Running Insulation Score analysis on experiment: {}...".format(experiment_names[idx]))
+            analysis_results = ''
+            analysis_results += downstream_analysis.compute_insulation_score_on_experiment_directory(
+                target_chromosome_file,
+                upscaled_chromosome_file,
+                experiment_names[idx],
+                base_cutoff=upscaled_cutoffs[idx],
+                target_cutoff=target_cutoff,
+                upscale=255, dataset='test', 
+                verbose=False, full_results=full_results
+            )
+            analysis_results += '\n'
+            with open('results/{}.txt'.format(result_name), 'a+') as f:
+                f.write(analysis_results)
+
 
     with open('results/{}.txt'.format(result_name), 'a+') as f:
         f.write("++++++++++++++++++++++++++++{}++++++++++++++++++++++++++++++++++++\n".format(result_name))

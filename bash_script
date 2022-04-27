@@ -1,0 +1,114 @@
+#C40 S40 datasets
+
+#Create GM12878 downsampled datasets
+python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_synthetic16/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 40 --bound 201 --cutoff-base 100 --cutoff-target 255 -d all -n gm12878_synthetic16_raoetal -v
+python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_synthetic25/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 40 --bound 201 --cutoff-base 80 --cutoff-target 255 -d all -n gm12878_synthetic25_raoetal -v
+python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_synthetic50/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 40 --bound 201 --cutoff-base 50 --cutoff-target 255 -d all -n gm12878_synthetic50_raoetal -v
+python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_synthetic100/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 40 --bound 201 --cutoff-base 25 --cutoff-target 255 -d all -n gm12878_synthetic100_raoetal -v
+
+#Create IMR90 downsampled datasets
+python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_synthetic16/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 40 --bound 201 --cutoff-base 100 --cutoff-target 255 -d all -n imr90_synthetic16_raoetal -v
+python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_synthetic25/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 40 --bound 201 --cutoff-base 80 --cutoff-target 255 -d all -n  imr90_synthetic25_raoetal -v
+python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_synthetic50/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 40 --bound 201 --cutoff-base 50 --cutoff-target 255 -d all -n  imr90_synthetic50_raoetal -v
+python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_synthetic100/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 40 --bound 201 --cutoff-base 25 --cutoff-target 255 -d all -n  imr90_synthetic100_raoetal -v
+
+#Create K562 downsampled datasets
+python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_synthetic16/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 40 --bound 201 --cutoff-base 100 --cutoff-target 255 -d all -n k562_synthetic16_raoetal -v
+python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_synthetic25/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 40 --bound 201 --cutoff-base 80 --cutoff-target 255 -d all -n  k562_synthetic25_raoetal -v
+python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_synthetic50/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 40 --bound 201 --cutoff-base 50 --cutoff-target 255 -d all -n  k562_synthetic50_raoetal -v
+python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_synthetic100/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 40 --bound 201 --cutoff-base 25 --cutoff-target 255 -d all -n  k562_synthetic100_raoetal -v
+
+
+
+# C40 S28 datasets
+
+# Create GM12878 downsampled datasets
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_synthetic16/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 28 --bound 201 --cutoff-base 100 --cutoff-target 255 -d all -n gm12878_synthetic16_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_synthetic25/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 28 --bound 201 --cutoff-base 80 --cutoff-target 255 -d all -n gm12878_synthetic25_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_synthetic50/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 28 --bound 201 --cutoff-base 50 --cutoff-target 255 -d all -n gm12878_synthetic50_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_synthetic100/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 28 --bound 201 --cutoff-base 25 --cutoff-target 255 -d all -n gm12878_synthetic100_raoetal -v
+
+# Create IMR90 downsampled datasets
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_synthetic16/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 28 --bound 201 --cutoff-base 100 --cutoff-target 255 -d all -n imr90_synthetic16_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_synthetic25/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 28 --bound 201 --cutoff-base 80 --cutoff-target 255 -d all -n  imr90_synthetic25_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_synthetic50/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 28 --bound 201 --cutoff-base 50 --cutoff-target 255 -d all -n  imr90_synthetic50_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_synthetic100/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 28 --bound 201 --cutoff-base 25 --cutoff-target 255 -d all -n  imr90_synthetic100_raoetal -v
+
+# Create K562 downsampled datasets
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_synthetic16/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 28 --bound 201 --cutoff-base 100 --cutoff-target 255 -d all -n k562_synthetic16_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_synthetic25/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 28 --bound 201 --cutoff-base 80 --cutoff-target 255 -d all -n  k562_synthetic25_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_synthetic50/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 28 --bound 201 --cutoff-base 50 --cutoff-target 255 -d all -n  k562_synthetic50_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_synthetic100/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/synthetic/ --chunk 40 --stride 28 --bound 201 --cutoff-base 25 --cutoff-target 255 -d all -n  k562_synthetic100_raoetal -v
+
+
+# Create GM12878 c40s28 low-read-count datasets
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_encode0/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 40 --stride 28 --bound 201 --cutoff-base 90 --cutoff-target 255 -d all -n gm12878_encode0_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_encode1/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 40 --stride 28 --bound 201 --cutoff-base 88 --cutoff-target 255 -d all -n gm12878_encode1_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_encode2/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 40 --stride 28 --bound 201 --cutoff-base 97 --cutoff-target 255 -d all -n gm12878_encode2_raoetal -v
+
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_hic026/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 40 --stride 28 --bound 201 --cutoff-base 143 --cutoff-target 255 -d all -n gm12878_hic026_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_hic033/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 40 --stride 28 --bound 201 --cutoff-base 29 --cutoff-target 255 -d all -n gm12878_hic033_raoetal -v
+
+# Create IMR90 low-read-count datasets
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/IMR90_hic057/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/IMR90_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 40 --stride 28 --bound 201 --cutoff-base 50 --cutoff-target 255 -d all -n imr90_hic057_raoetal -v
+
+
+# Create K562 low-read-count datasets
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/K562_hic073/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/K562_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 40 --stride 28 --bound 201 --cutoff-base 21 --cutoff-target 255 -d all -n k562_hic073_raoetal -v
+
+
+
+
+# Create GM12878 c40s40 low-read-count datasets
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_encode0/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 40 --stride 40 --bound 201 --cutoff-base 90 --cutoff-target 255 -d all -n gm12878_encode0_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_encode1/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 40 --stride 40 --bound 201 --cutoff-base 88 --cutoff-target 255 -d all -n gm12878_encode1_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_encode2/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 40 --stride 40 --bound 201 --cutoff-base 97 --cutoff-target 255 -d all -n gm12878_encode2_raoetal -v
+
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_hic026/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 40 --stride 40 --bound 201 --cutoff-base 143 --cutoff-target 255 -d all -n gm12878_hic026_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_hic033/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 40 --stride 40 --bound 201 --cutoff-base 29 --cutoff-target 255 -d all -n gm12878_hic033_raoetal -v
+
+# Create IMR90 low-read-count datasets
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/IMR90_hic057/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/IMR90_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 40 --stride 40 --bound 201 --cutoff-base 50 --cutoff-target 255 -d all -n imr90_hic057_raoetal -v
+
+
+# Create K562 low-read-count datasets
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/K562_hic073/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/K562_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 40 --stride 40 --bound 201 --cutoff-base 21 --cutoff-target 255 -d all -n k562_hic073_raoetal -v
+
+
+
+# Create GM12878 c269s257 low-read-count datasets
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_encode0/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 269 --stride 257 --bound 201 --cutoff-base 90 --cutoff-target 255 -d all -n gm12878_encode0_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_encode1/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 269 --stride 257 --bound 201 --cutoff-base 88 --cutoff-target 255 -d all -n gm12878_encode1_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_encode2/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 269 --stride 257 --bound 201 --cutoff-base 97 --cutoff-target 255 -d all -n gm12878_encode2_raoetal -v
+
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_hic026/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 269 --stride 257 --bound 201 --cutoff-base 143 --cutoff-target 255 -d all -n gm12878_hic026_raoetal -v
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_hic033/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/GM12878_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 269 --stride 257 --bound 201 --cutoff-base 29 --cutoff-target 255 -d all -n gm12878_hic033_raoetal -v
+
+# Create IMR90 low-read-count datasets
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/IMR90_hic057/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/IMR90_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 269 --stride 257 --bound 201 --cutoff-base 50 --cutoff-target 255 -d all -n imr90_hic057_raoetal -v
+
+
+# Create K562 low-read-count datasets
+# python dataset_creator.py -b /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/K562_hic073/ -t /media/murtaza/ubuntu/updated_hic_data/data/chromosome_files/K562_rao_et_al/ -o /media/murtaza/ubuntu/updated_hic_data/data/datasets/real/ --chunk 269 --stride 257 --bound 201 --cutoff-base 21 --cutoff-target 255 -d all -n k562_hic073_raoetal -v
+
+
+
+
+
+# Evaluate Predicted Intra-Chromosomal Interactions
+#python run_evaluations.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_hicnn2_synthetic16/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_rao_et_al/ -c1 255 -c2 100 -e hicnn2-16_gm12878-synthetic-16   --correlation-analysis --hic-analysis -r hicnn2_synthetic_results -a
+#python run_evaluations.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_hicnn2_synthetic25/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_rao_et_al/ -c1 255 -c2 80 -e hicnn2-25_gm12878-synthetic-25   --correlation-analysis --hic-analysis -r hicnn2_synthetic_results -a
+#python run_evaluations.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_hicnn2_synthetic50/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_rao_et_al/ -c1 255 -c2 50 -e hicnn2-50_gm12878-synthetic-50   --correlation-analysis --hic-analysis -r hicnn2_synthetic_results -a
+#python run_evaluations.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_hicnn2_synthetic100/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/GM12878_rao_et_al/ -c1 255 -c2 25 -e hicnn2-100_gm12878-synthetic-100 --correlation-analysis --hic-analysis -r hicnn2_synthetic_results -a
+
+
+#python run_evaluations.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_hicnn2_synthetic16/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_rao_et_al/ -c1 255 -c2 100 -e hicnn2-16_imr90-synthetic-16   --correlation-analysis --hic-analysis -r hicnn2_synthetic_results -a
+#python run_evaluations.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_hicnn2_synthetic25/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_rao_et_al/ -c1 255 -c2 80 -e hicnn2-25_imr90-synthetic-25   --correlation-analysis --hic-analysis -r hicnn2_synthetic_results -a
+#python run_evaluations.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_hicnn2_synthetic50/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_rao_et_al/ -c1 255 -c2 50 -e hicnn2-50_imr90-synthetic-50   --correlation-analysis --hic-analysis -r hicnn2_synthetic_results -a
+#python run_evaluations.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_hicnn2_synthetic100/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/IMR90_rao_et_al/ -c1 255 -c2 25 -e hicnn2-100_imr90-synthetic-100 --correlation-analysis --hic-analysis -r hicnn2_synthetic_results -a
+
+
+#python run_evaluations.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_hicnn2_synthetic16/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_rao_et_al/ -c1 255 -c2 100 -e hicnn2-16_k562-synthetic-16   --correlation-analysis --hic-analysis -r hicnn2_synthetic_results -a
+#python run_evaluations.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_hicnn2_synthetic25/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_rao_et_al/ -c1 255 -c2 80 -e hicnn2-25_k562-synthetic-25   --correlation-analysis --hic-analysis -r hicnn2_synthetic_results -a
+#python run_evaluations.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_hicnn2_synthetic50/ -t  /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_rao_et_al/ -c1 255 -c2 50 -e hicnn2-50_k562-synthetic-50   --correlation-analysis --hic-analysis -r hicnn2_synthetic_results -a
+#python run_evaluations.py -b /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_hicnn2_synthetic100/ -t /media/murtaza/ubuntu/updated_hic_data/data/synthetic_chromosome_files/K562_rao_et_al/ -c1 255 -c2 25 -e hicnn2-100_k562-synthetic-100 --correlation-analysis --hic-analysis -r hicnn2_synthetic_results -a

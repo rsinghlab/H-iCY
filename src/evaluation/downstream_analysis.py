@@ -13,6 +13,8 @@ import subprocess
 from io import BytesIO
 import base64
 
+import torch
+import torch.nn.functional as F
 import tmscoring
 
 
@@ -745,3 +747,94 @@ def perform_loop_recall_analysis(
     
     
     return ('{}:{}'.format(experiment_name, summed_results), true_positive_loops)
+
+
+
+
+
+
+class InsulationLoss(torch.nn.Module):
+    def __init__(self, window_radius=20, deriv_size=20):
+        super(InsulationLoss, self).__init__()
+        self.deriv_size     = deriv_size
+        self.window_radius  = window_radius
+        self.di_pool        = torch.nn.AvgPool2d(kernel_size=window_radius, stride=1)
+        self.top_pool       = torch.nn.AvgPool1d(kernel_size=deriv_size, stride=1)
+        self.bottom_pool    = torch.nn.AvgPool1d(kernel_size=deriv_size, stride=1)
+        self.mse = torch.nn.MSELoss()
+
+    def indivInsulation(self, x):
+        iv     = self.di_pool(x)
+        iv     = torch.diagonal(iv, dim1=2, dim2=3)       
+        iv     = torch.log2(iv/torch.mean(iv))
+        top    = self.top_pool(iv[:,:,self.deriv_size:])
+        bottom = self.bottom_pool(iv[:,:,:-self.deriv_size])
+        dv     = (top-bottom)
+        return dv
+
+    def forward(self, output, target):
+        out_dv = self.indivInsulation(output)
+        tar_dv = self.indivInsulation(target)
+        loss  = self.mse(tar_dv, out_dv).detach().numpy()
+        return loss
+        
+
+
+
+def compute_insulation_score_on_experiment_directory(
+    base_files_path,
+    target_files_path,
+    experiment_name,
+    base_cutoff,
+    target_cutoff,
+    upscale,
+    dataset='test',
+    full_results=False,
+    verbose=False
+):
+    
+    compiled_results = {
+        'insulation_score': []
+    }
+    insulation_score = InsulationLoss()
+    
+    for chromosome_id in globals.dataset_partitions[dataset]:
+        base_file = os.path.join(base_files_path, 'chr{}.npz'.format(chromosome_id))
+        target_file = os.path.join(target_files_path, 'chr{}.npz'.format(chromosome_id))
+        if verbose: print("Base file: {}\nTarget File: {}".format(base_file, target_file))
+        
+        if not (os.path.exists(base_file) and os.path.exists(target_file)):
+            print("Missing Chromosome files")
+            continue
+
+        
+        comapct_indices_base =  np.load(base_file, allow_pickle=True)['compact']
+        compact_indices_target = np.load(target_file, allow_pickle=True)['compact']
+
+        compact_indexes = list(set.intersection(set(comapct_indices_base), set(compact_indices_target)))
+
+        base_data = ops.normalize(base_file, base_cutoff, compact_indexes, verbose=verbose)
+        base_data, _ = ops.divide(base_data, str(chromosome_id), 200, 200, 190, verbose=verbose)
+
+        target_data = ops.normalize(target_file, target_cutoff, compact_indexes, verbose=verbose)
+        target_data, _ = ops.divide(target_data, str(chromosome_id), 200, 200, 190, verbose=verbose)
+
+        
+        
+        
+        scores = insulation_score(torch.from_numpy(base_data), torch.from_numpy(target_data))
+
+            
+        compiled_results['insulation_score'].append(scores)
+    
+    averaged_results = {}
+    for key in compiled_results.keys():
+        if full_results:
+            averaged_results[key] = compiled_results[key]
+        else:
+            averaged_results[key] = np.mean(compiled_results[key])
+    
+    
+    return '{}:{}'.format(experiment_name, averaged_results)
+    
+    
