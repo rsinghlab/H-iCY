@@ -1,4 +1,4 @@
-# Investigation-of-HiC-Resolution-Improvement-Methods
+# H-iCY
 
 
 ## Abstract
