@@ -27,8 +27,6 @@ def check_if_cooler_file_exists(cooler_file_path, chromosome, cutoff):
         @params: cutoff value to use
         @returns: None
     """
-    print(cooler_file_path)
-
     if not os.path.exists(cooler_file_path):
         npz_file_path = cooler_file_path.replace('.cool', '.npz')
         if not os.path.exists(npz_file_path):

@@ -64,6 +64,6 @@ for dtst in datasets:
         chunk=args.chunk,
         stride=args.stride,
         bound=args.bound,
-        compact_type='intersection',
+        compact_type='ignore',
         verbose=args.verbose
     )

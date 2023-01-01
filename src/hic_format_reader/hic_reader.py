@@ -89,13 +89,13 @@ def matrix_extract(chrN1, chrN2, binsize, hicfile, normalization='KR'):
     col = [c//binsize for c in result[1]]
     
     value = result[2]
-    Nrow = max(row) + 1
-    Ncol = max(col) + 1
     
     chr_total_size = read_hic_header(hicfile)['chromsizes'][str(chrN1)]
     
-    #N = max(Nrow, Ncol)
-    N = chr_total_size//binsize + 1
+    #N = chr_total_size//binsize + 1
+    # Ignore the tail 
+    N = chr_total_size//binsize
+
 
     mat = csr_matrix((value, (row,col)), shape=(N,N))
     mat = csr_matrix.todense(mat)
@@ -104,4 +104,10 @@ def matrix_extract(chrN1, chrN2, binsize, hicfile, normalization='KR'):
 
     mat = mat.astype(int)
     
+    
+
+
+
+
+
     return mat, compact_idx

@@ -4,7 +4,7 @@ import torch
 import shutil
 import gzip
 from torch.utils.data import TensorDataset, DataLoader
-
+from src import globals
 from src.matrix_ops import ops
 
 
@@ -49,9 +49,9 @@ def compute_cutoff_value(hic_directory_path, percentile=99.95):
     return avg_percentile/count
         
 
-def downsample_chromsosome_file(input_path, output_path, downsampling_ratio):
+def downsample_chromsosome_file(input_path, output_path, downsampling_ratio, dataset='test'):
    
-    for chromo in range(1, 23):
+    for chromo in globals.dataset_partitions[dataset]:
         input_chrom_path = os.path.join(input_path, 'chr{}.npz'.format(chromo))
         output_chrom_path = os.path.join(output_path, 'chr{}.npz'.format(chromo))
         
@@ -63,7 +63,8 @@ def downsample_chromsosome_file(input_path, output_path, downsampling_ratio):
         except:
             print("Chromosome file {} missing, ignoring...".format(input_chrom_path))
 
-        downsampled_data = data/float(downsampling_ratio)
+        downsampled_data = ops.downsampling(data, downsampling_ratio)
+
 
 
         np.savez_compressed(output_chrom_path, hic=downsampled_data, compact=compact)

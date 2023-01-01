@@ -1,4 +1,9 @@
 # Creates all the datasets
+python data_parser.py -f hic_datasets/HMEC/geo-raoetal.hic -o chromosome_files/HMEC_rao_et_al/ -v
+python data_parser.py -f hic_datasets/HUVEC/geo-raoetal.hic -o chromosome_files/HUVEC_rao_et_al/ -v
+python data_parser.py -f hic_datasets/KBM7/geo-raoetal.hic -o chromosome_files/KMB7_rao_et_al/ -v
+python data_parser.py -f hic_datasets/NHEK/geo-raoetal.hic -o chromosome_files/NHEK_rao_et_al/ -v
+
 #python data_parser.py -f hic_datasets/GM12878/GSE63525_GM12878_insitu_primary_30.hic -o chromosome_files/GM12878_rao_et_al/ -v
 #python data_parser.py -f hic_datasets/IMR90/GSE63525_IMR90_combined_30.hic -o chromosome_files/IMR90_rao_et_al/ -v
 #python data_parser.py -f hic_datasets/K562/GSE63525_K562_combined_30.hic -o chromosome_files/K562_rao_et_al/ -v

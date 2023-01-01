@@ -11,7 +11,12 @@ import matplotlib.pyplot as plt
 def get_diagonals(file_path, cut_off, compact=[], num_diagonals=200, verbose=False):
     if cut_off == -1:
         cut_off = sys.maxsize
+    
     matrix = normalize(file_path, cut_off, compact)
+    
+    if cut_off != -1:
+        matrix = matrix*cut_off
+
     diagonals = [matrix.diagonal(diagonal) for diagonal in range(num_diagonals)]
 
     return diagonals

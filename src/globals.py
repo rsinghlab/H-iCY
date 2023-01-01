@@ -1,7 +1,7 @@
 """
     Path to the data directory that contains all the .hic files and will contain all the generated files
 """
-DATA_DIRECTORY = '/media/murtaza/ubuntu/updated_hic_data/data/'
+DATA_DIRECTORY = '/media/murtaza/ubuntu/hic_data/'
 TEMP_DATA_DIRECTORY = '/home/murtaza/Documents/hic_upscaling_evaluation/temp/'
 QC_PARAMETERS_FILE = '/media/murtaza/ubuntu/updated_hic_data/data/3dqc_config/parameters.txt'
 """
@@ -11,7 +11,7 @@ dataset_partitions = {
     'train': [1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 16, 17, 18],
     'valid': [8, 9, 10, 11],
     'test': [19, 20, 21, 22],
-    'all': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+    'all': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
 }
 
 
@@ -50,7 +50,22 @@ dataset_cutoff_values = {
     'GM12878_hic033': 29, 
     'IMR90_hic057': 68,   
     'K562_hic073': 28,
-    'deeplearning_upscaled': 255
+    'deeplearning_upscaled': 255,
+    'GM12878_synthetic16': 100,
+    'GM12878_synthetic25': 80,
+    'GM12878_synthetic44': 50,
+    'GM12878_synthetic50': 50,
+    'GM12878_synthetic100': 20,
+    'IMR90_synthetic16': 100,
+    'IMR90_synthetic25': 80,
+    'IMR90_synthetic44': 50,
+    'IMR90_synthetic50': 50,
+    'IMR90_synthetic100': 20,
+    'K562_synthetic16': 100,
+    'K562_synthetic25': 80,
+    'K562_synthetic44': 50,
+    'K562_synthetic50': 50,
+    'K562_synthetic100': 20
 }
 
 
@@ -170,3 +185,9 @@ JAR_LOCATION = "other_tools/3DMax/examples/3DMax.jar"
 '''
 DNA_MOTIF_FILE_PATH = '/media/murtaza/ubuntu/updated_hic_data/data/motifs/CTCF.bed'
 CHIA_PET_FILE = '/media/murtaza/ubuntu/updated_hic_data/data/chia_pet_datasets/K562_CTCF_mediated_chromatin_interactions.bed'
+
+
+'''
+    Conserved Feature Analysis
+'''
+FEATURES_FOLDER_PATH = '/media/murtaza/ubuntu/updated_hic_data/data/shared_features/'

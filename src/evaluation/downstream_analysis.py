@@ -1,7 +1,7 @@
 import gzip
 import numpy as np
 import os
-
+from PIL import Image
 from pandas.core.indexes import base
 from src.evaluation.biological_analysis import check_if_cooler_file_exists
 from src.utils import create_entire_path_directory, clean_up_folder
@@ -10,13 +10,18 @@ from src.format_handler import read_npz_file, normalize_dense_matrix, create_fit
 from src.matrix_ops import ops
 import glob
 import subprocess
-from io import BytesIO
-import base64
 
 import torch
 import torch.nn.functional as F
 import tmscoring
+import math 
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 
+
+LOOP_RELAXATION_PARAMETER = 3
+BORDER_RELAXATION_PARAMETER = 5
+HAIRPIN_RELAXATION_PARAMETER = 2
 
 # 3D reconstruction and structure comparison
 def create_constrains_file_from_cooler_file(npz_file, output_directory,
@@ -822,9 +827,8 @@ def compute_insulation_score_on_experiment_directory(
         
         
         
-        scores = insulation_score(torch.from_numpy(base_data), torch.from_numpy(target_data))
+        scores = float(insulation_score(torch.from_numpy(base_data), torch.from_numpy(target_data)))
 
-            
         compiled_results['insulation_score'].append(scores)
     
     averaged_results = {}
@@ -834,7 +838,549 @@ def compute_insulation_score_on_experiment_directory(
         else:
             averaged_results[key] = np.mean(compiled_results[key])
     
-    
+    print(averaged_results)
+
     return '{}:{}'.format(experiment_name, averaged_results)
+
+
+def read_bed_file(path, resolution=10000):
+    # Split up the data to ensure that its in the correct list of list format
+    data = open(path).read().split('\n')[:-1]
     
+    data = list(
+        map(
+            lambda x: x.split('\t'),
+            data
+        )
+    )[1:]
+
+    # Fix the the numbers to be in float format rather than a string
+    data = list(
+        map(
+            lambda x: [int(x[1])//resolution,int(x[2])//resolution],
+            data
+        )
+    )
+    return np.array(data)
+
+
+
+def read_conserved_features_file(features_path, chromosome):
+    '''
+        This function reads and filter out the conserved loops and borders from the provided path to the files
+
+        @params: dna_motif_file <string>, Absolute path to the folder containing the position bed file
+        @paramn: chromosome <string>, Chromosome name in format ''chr{}''.
+        @returns: <List>, <List>, Two list that contains borders and loop positions
+    '''
+    loop_file_path = os.path.join(features_path, 'loops', '{}.bed'.format(chromosome)) 
+    border_file_path = os.path.join(features_path, 'borders', '{}.bed'.format(chromosome))
+    hairpin_file_path = os.path.join(features_path, 'hairpins', '{}.bed'.format(chromosome))
+
+    return read_bed_file(loop_file_path), read_bed_file(border_file_path), read_bed_file(hairpin_file_path)
+
+def run_chromosight(cooler_file, chromosome):
+    folder = '/'.join(cooler_file.split('/')[:-1])
+    loops_output_path = os.path.join(
+        folder,
+        '{}_loops'.format(chromosome)
+    )
+    borders_output_path = os.path.join(
+        folder,
+        '{}_borders'.format(chromosome)
+    )
+    hairpins_output_path = os.path.join(
+        folder,
+        '{}_hairpins'.format(chromosome)
+    )
     
+    if not os.path.exists('{}.tsv'.format(borders_output_path)):
+        cmd_path = 'chromosight detect --pattern=borders --pearson=0.3 --threads 8 {} {};'.format(
+            cooler_file,
+            borders_output_path
+        )
+        os.system(cmd_path)
+
+    if not os.path.exists('{}.tsv'.format(hairpins_output_path)):
+        cmd_path = 'chromosight detect --pattern=hairpins --pearson=0.4 --threads 8 {} {};'.format(
+            cooler_file,
+            hairpins_output_path
+        )
+        os.system(cmd_path)
+
+    if not os.path.exists('{}.tsv'.format(loops_output_path)):
+        cmd_path = 'chromosight detect --pattern=loops --threads 8 --min-dist 2000 --max-dist 200000 {} {};'.format(
+            cooler_file, 
+            loops_output_path,
+        )
+        os.system(cmd_path)
+        
+    return loops_output_path+'.tsv', borders_output_path+'.tsv', hairpins_output_path+'.tsv'
+
+
+def read_chromosight_tsv_file(file_path):
+    if os.path.exists(file_path):
+        data = open(file_path).read().split('\n')[1:-1]
+        data = np.array(list(map(lambda x: [x.split('\t')[i] for i in [6, 7]], data))).astype(np.int64)
+        return data
+    else: 
+        return []
+    
+def distance(c1, c2):
+    return math.sqrt((float(c1[0]) - float(c2[0]))**2 + (float(c1[1]) - float(c2[1]))**2)
+
+
+def is_overlapping(coordinate, target_coordinates, rp=0):
+    relaxation_parameter = math.sqrt(2*(rp**2))
+    closest = sorted(list(map(lambda x: (x, distance(coordinate, x)), target_coordinates)), key = lambda y: y[1])[0]
+    coor, d = closest
+
+    if d <= relaxation_parameter:
+       return np.array2string(coor, separator=',')
+    else:
+        return ''
+
+
+def overlap_analysis(base, target, rp):
+    multi_map = {}
+    for coordinate in base:
+        coordinate = is_overlapping(coordinate, target, rp)
+        if coordinate not in multi_map.keys(): 
+            multi_map[coordinate] = 0
+            
+        multi_map[coordinate] += 1
+
+    fp = multi_map[''] if '' in multi_map.keys() else 0  # When we couldnt find any mapping in target
+    fn = len(target)
+    tp = 0.000000001
+    mm = -1
+
+    for key in multi_map.keys():
+        if multi_map[key] >= 1 and key != '':
+            tp += 1
+            fn -= 1
+        if multi_map[key] >= 2:
+            mm += 1
+
+
+    precision = tp/(tp+fp)
+    recall =  tp/(tp+fn)
+    
+    f1 = (2*precision*recall)/(precision + recall)
+
+    accuracy = tp/(tp+fn+fp)
+
+    return precision, recall, f1, accuracy
+
+
+def bisect_into_specific_and_shared(base, target, rp):
+    specific_features = set()
+    shared_features = set()
+    for coordinate in base:
+        if is_overlapping(coordinate, target, rp) == '':
+            specific_features.add(np.array2string(coordinate, separator=','))
+        else:
+            shared_features.add(np.array2string(coordinate, separator=','))
+    
+    specific_features = list(map(lambda x: x.strip('[]').split(','),list(specific_features)))
+    specific_features = list(map(lambda x: np.array([int(x[0]), int(x[1])]), specific_features))
+    shared_features = list(map(lambda x: x.strip('[]').split(','),list(shared_features)))
+    shared_features = list(map(lambda x: np.array([int(x[0]), int(x[1])]), shared_features))
+    
+
+    return np.array(specific_features), np.array(shared_features)
+        
+
+
+
+
+
+
+def filter_coordinates(coordinates, coordinate_range):
+    filtered_coordinates = list(filter(
+        lambda x: (x[0] >= coordinate_range[0] and x[0] <= coordinate_range[1] and x[1] >= coordinate_range[2] and x[1] <= coordinate_range[3]),
+        coordinates
+    ))
+    filtered_coordinates = list(map(
+        lambda x: np.array([x[0] - coordinate_range[0], x[1] - coordinate_range[2]]),
+        filtered_coordinates
+    ))
+    return filtered_coordinates
+
+
+def visualize_hic_matrix(hic_path, output_path, cutoff, submat, size=100, loop_coordinates=[], border_coordinates=[], hairpin_coordinates=[]):
+    REDMAP = LinearSegmentedColormap.from_list("bright_red", [(1,1,1),(1,0,0)])
+    hic_matrix, _ = read_npz_file(hic_path)
+    
+    hic_matrix = hic_matrix[submat:submat+size, submat:submat+size]
+    cutoff_value = np.percentile(hic_matrix, 98.0)
+
+    hic_matrix = np.minimum(cutoff_value, hic_matrix)
+    hic_matrix = np.maximum(hic_matrix, 0)
+
+
+    loop_coordinates = filter_coordinates(loop_coordinates, [submat, submat+size, submat, submat+size])
+    border_coordinates = filter_coordinates(border_coordinates, [submat, submat+size, submat, submat+size])
+    hairpin_coordinates = filter_coordinates(hairpin_coordinates, [submat, submat+size, submat, submat+size])
+
+
+    plt.scatter([x[0] for x in border_coordinates], [x[1] for x in border_coordinates], c='blue', s=50, marker='s')
+    plt.scatter([x[0] for x in loop_coordinates], [x[1] for x in loop_coordinates], c='green', s=50, marker='P')
+    plt.scatter([x[0] for x in hairpin_coordinates], [x[1] for x in hairpin_coordinates], c='black', s=50, marker='|')
+    plt.imshow(hic_matrix, cmap=REDMAP)
+    plt.axis('off')
+    print(output_path)
+
+    plt.savefig(os.path.join(output_path), bbox_inches='tight', dpi=1200)
+    plt.close()
+
+
+def save_conserved_features(path, data, chromosome, resolution=10000):
+    with open(path, 'w') as f:
+        f.write('chromosome\tstart\tend\n')
+        print('Dataset {} has {} shared features'.format(path, data.shape[0]))
+        for idx in range(data.shape[0]):
+            f.write('{}\t{}\t{}\n'.format(
+                'chr{}'.format(chromosome), int(data[idx][0])*resolution, int(data[idx][1])*resolution
+        ))
+
+
+def get_cell_shared_feature_set(files, feature_type='loops', resolution=10000, rp=0):
+    all_pair_files = [(a, b) for idx, a in enumerate(list(files)) for b in list(files)[idx + 1:]]
+    shared_features = {}
+
+    for chr_id in globals.dataset_partitions['test']:
+        shared_features = {}
+        print(len(all_pair_files))
+
+        for pair in all_pair_files:
+            base_cooler_file = os.path.join(pair[0], 'chr{}.cool'.format(chr_id))
+            target_cooler_file = os.path.join(pair[1], 'chr{}.cool'.format(chr_id))
+            
+            check_if_cooler_file_exists(base_cooler_file, chr_id, 255)
+            check_if_cooler_file_exists(target_cooler_file, chr_id, 255)
+            
+            run_chromosight(base_cooler_file, 'chr{}'.format(chr_id))
+            run_chromosight(target_cooler_file, 'chr{}'.format(chr_id))
+            
+            p1_features = read_chromosight_tsv_file(os.path.join(pair[0], 'chr{}_{}.tsv'.format(chr_id, feature_type)))
+            p2_features = read_chromosight_tsv_file(os.path.join(pair[1], 'chr{}_{}.tsv'.format(chr_id, feature_type)))
+
+            for feature in p1_features:
+                coordinate = is_overlapping(feature, p2_features, rp)
+                if coordinate not in shared_features.keys(): 
+                    shared_features[coordinate] = 0
+                    
+                shared_features[coordinate] += 1
+
+        with open(os.path.join(globals.FEATURES_FOLDER_PATH, feature_type, 'chr{}.bed'.format(chr_id)), 'w') as f:
+            count = 0
+            for key in shared_features.keys():
+                if shared_features[key] > 21 or shared_features[key] == 0:
+                    continue
+                else:
+                    count+=1
+                    x, y = key.strip('[]').split(',')
+                    f.write('{}\t{}\t{}\n'.format('chr{}'.format(chr_id), int(x)*resolution, int(y)*resolution))
+            print('Chr {} has {} shared features'.format(chr_id, count))
+        
+        print(count, p1_features.shape, p2_features.shape)
+
+
+
+
+
+
+def conserved_feature_analysis_on_experiment_directory( 
+        target_files_path,
+        base_files_path,
+        experiment_name,
+        base_cutoff,
+        target_cutoff,
+        upscale,
+        dataset='all',
+        full_results=False,
+        verbose=False
+    ):
+    results ={
+        'Aggregate': {
+            'Loops': {
+                'precision': [],
+                'recall': [],
+                'f1': [],
+                'acc': []
+            },
+            'Borders': {
+                'precision': [],
+                'recall': [],
+                'f1': [],
+                'acc': []
+            },
+            'Hairpins': {
+                'precision': [],
+                'recall': [],
+                'f1': [],
+                'acc': []
+            },
+        },
+        'Shared': {
+            'Loops': {
+                'precision': [],
+                'recall': [],
+                'f1': [],
+                'acc': []
+            },
+            'Borders': {
+                'precision': [],
+                'recall': [],
+                'f1': [],
+                'acc': []
+            },
+            'Hairpins': {
+                'precision': [],
+                'recall': [],
+                'f1': [],
+                'acc': []
+            },
+        },
+        'Specific': {
+            'Loops': {
+                'precision': [],
+                'recall': [],
+                'f1': [],
+                'acc': []
+            },
+            'Borders': {
+                'precision': [],
+                'recall': [],
+                'f1': [],
+                'acc': []
+            },
+            'Hairpins': {
+                'precision': [],
+                'recall': [],
+                'f1': [],
+                'acc': []
+            },
+        }
+    }
+    
+
+    for chromosome_id in globals.dataset_partitions['test']:
+        print(base_files_path)
+        
+        base_cooler_file = os.path.join(base_files_path, 'chr{}.cool'.format(chromosome_id))
+        target_cooler_file = os.path.join(target_files_path, 'chr{}.cool'.format(chromosome_id))
+        check_if_cooler_file_exists(base_cooler_file, chromosome_id, base_cutoff)
+        check_if_cooler_file_exists(target_cooler_file, chromosome_id, target_cutoff)
+        if verbose: print("Base file: {}\nTarget File: {}".format(base_cooler_file, target_cooler_file))
+
+        if verbose: print('Running Chromosight to extract features')
+        run_chromosight(base_cooler_file, 'chr{}'.format(chromosome_id))
+        run_chromosight(target_cooler_file, 'chr{}'.format(chromosome_id))
+        
+        if verbose: print('Reading the chromosight generated files')
+        base_loops = read_chromosight_tsv_file(os.path.join(base_files_path, 'chr{}_loops.tsv'.format(chromosome_id)))
+        target_loops = read_chromosight_tsv_file(os.path.join(target_files_path, 'chr{}_loops.tsv'.format(chromosome_id)))
+
+        base_borders = read_chromosight_tsv_file(os.path.join(base_files_path, 'chr{}_borders.tsv'.format(chromosome_id)))
+        target_borders = read_chromosight_tsv_file(os.path.join(target_files_path, 'chr{}_borders.tsv'.format(chromosome_id)))
+        
+        base_hairpins = read_chromosight_tsv_file(os.path.join(base_files_path, 'chr{}_hairpins.tsv'.format(chromosome_id)))
+        target_hairpins = read_chromosight_tsv_file(os.path.join(target_files_path, 'chr{}_hairpins.tsv'.format(chromosome_id)))
+
+
+        if verbose: print('Reading conserved features file')
+        conserved_loops, conserved_borders, conserved_hairpins = read_conserved_features_file(globals.FEATURES_FOLDER_PATH, 'chr{}'.format(chromosome_id))
+        
+        target_specific_loops, target_shared_loops = bisect_into_specific_and_shared(target_loops, conserved_loops, LOOP_RELAXATION_PARAMETER)
+        target_specific_borders, target_shared_borders = bisect_into_specific_and_shared(target_borders, conserved_borders, BORDER_RELAXATION_PARAMETER)
+        target_specific_hairpins, target_shared_hairpins = bisect_into_specific_and_shared(target_hairpins, conserved_hairpins, HAIRPIN_RELAXATION_PARAMETER)
+        
+        print(target_loops.shape, target_specific_loops.shape, target_shared_loops.shape)
+        print(target_borders.shape, target_specific_borders.shape, target_shared_borders.shape)
+        print(target_hairpins.shape, target_specific_hairpins.shape, target_shared_hairpins.shape)
+        
+
+        # Aggregate analysis
+        precision, recall, f1, acc = overlap_analysis(base_loops, target_loops, LOOP_RELAXATION_PARAMETER)
+        results['Aggregate']['Loops']['precision'].append(precision)
+        results['Aggregate']['Loops']['recall'].append(recall)
+        results['Aggregate']['Loops']['f1'].append(f1)
+        results['Aggregate']['Loops']['acc'].append(acc)
+
+        precision, recall, f1, acc = overlap_analysis(base_borders, target_borders, BORDER_RELAXATION_PARAMETER)
+        results['Aggregate']['Borders']['precision'].append(precision)
+        results['Aggregate']['Borders']['recall'].append(recall)
+        results['Aggregate']['Borders']['f1'].append(f1)
+        results['Aggregate']['Borders']['acc'].append(acc)
+
+        precision, recall, f1, acc = overlap_analysis(base_hairpins, target_hairpins, HAIRPIN_RELAXATION_PARAMETER)
+        results['Aggregate']['Hairpins']['precision'].append(precision)
+        results['Aggregate']['Hairpins']['recall'].append(recall)
+        results['Aggregate']['Hairpins']['f1'].append(f1)
+        results['Aggregate']['Hairpins']['acc'].append(acc)
+
+
+        # Shared analysis
+        precision, recall, f1, acc = overlap_analysis(base_loops, target_shared_loops, LOOP_RELAXATION_PARAMETER)
+        results['Shared']['Loops']['precision'].append(precision)
+        results['Shared']['Loops']['recall'].append(recall)
+        results['Shared']['Loops']['f1'].append(f1)
+        results['Shared']['Loops']['acc'].append(acc)
+
+        precision, recall, f1, acc = overlap_analysis(base_borders, target_shared_borders, BORDER_RELAXATION_PARAMETER)
+        results['Shared']['Borders']['precision'].append(precision)
+        results['Shared']['Borders']['recall'].append(recall)
+        results['Shared']['Borders']['f1'].append(f1)
+        results['Shared']['Borders']['acc'].append(acc)
+
+        precision, recall, f1, acc = overlap_analysis(base_hairpins, target_shared_hairpins, HAIRPIN_RELAXATION_PARAMETER)
+        results['Shared']['Hairpins']['precision'].append(precision)
+        results['Shared']['Hairpins']['recall'].append(recall)
+        results['Shared']['Hairpins']['f1'].append(f1)
+        results['Shared']['Hairpins']['acc'].append(acc)
+
+
+        # Specific analysis
+        precision, recall, f1, acc = overlap_analysis(base_loops, target_specific_loops, LOOP_RELAXATION_PARAMETER)
+        results['Specific']['Loops']['precision'].append(precision)
+        results['Specific']['Loops']['recall'].append(recall)
+        results['Specific']['Loops']['f1'].append(f1)
+        results['Specific']['Loops']['acc'].append(acc)
+
+        precision, recall, f1, acc = overlap_analysis(base_borders, target_specific_borders, BORDER_RELAXATION_PARAMETER)
+        results['Specific']['Borders']['precision'].append(precision)
+        results['Specific']['Borders']['recall'].append(recall)
+        results['Specific']['Borders']['f1'].append(f1)
+        results['Specific']['Borders']['acc'].append(acc)
+
+        precision, recall, f1, acc = overlap_analysis(base_hairpins, target_specific_hairpins, HAIRPIN_RELAXATION_PARAMETER)
+        results['Specific']['Hairpins']['precision'].append(precision)
+        results['Specific']['Hairpins']['recall'].append(recall)
+        results['Specific']['Hairpins']['f1'].append(f1)
+        results['Specific']['Hairpins']['acc'].append(acc)
+        
+
+        #if True:
+        visualize_hic_matrix(
+            os.path.join(base_files_path, 'chr{}.npz'.format(chromosome_id)), 
+            os.path.join(base_files_path, 'chr{}.png'.format(chromosome_id)),
+            base_cutoff,
+            4500,
+            200,
+            base_loops,
+            base_borders,
+            base_hairpins
+        )
+
+        visualize_hic_matrix(
+            os.path.join(target_files_path, 'chr{}.npz'.format(chromosome_id)), 
+            os.path.join(target_files_path, 'chr{}.png'.format(chromosome_id)),
+            target_cutoff,
+            4500,
+            100,
+            target_loops,
+            target_borders,
+            target_hairpins
+        )
+        
+        # for rp in range(30):
+        #     print('Computing for borders')
+        #     precision, recall, f1, accuracy = overlap_analysis(base_hairpins, target_hairpins, rp)
+
+        #     if rp not in rp_results.keys():
+        #         rp_results[rp] = {
+        #             'precision': [],
+        #             'recall': [],
+        #             'f1': [],
+        #             'accuracy': []
+        #         }
+            
+        #     rp_results[rp]['precision'].append(precision)
+        #     rp_results[rp]['recall'].append(recall)
+        #     rp_results[rp]['f1'].append(f1)
+        #     rp_results[rp]['accuracy'].append(accuracy)
+            
+            
+            
+
+
+
+
+       
+
+        # target_overlapping_loops, target_specific_loops = get_overlapping_features(target_loops, conserved_loops)
+        # base_overlapping_loops, base_specific_loops = get_overlapping_features(base_loops, conserved_loops)
+
+        # target_overlapping_borders, target_specific_borders = get_overlapping_features(target_borders, conserved_borders)
+        # base_overlapping_borders, base_specific_borders = get_overlapping_features(base_borders, conserved_borders)
+        
+        # base_target_overlap_loops, _ = get_overlapping_features(base_loops, target_loops)
+        # base_target_overlap_borders, _ = get_overlapping_features(base_borders, target_borders)
+
+        
+        # results_string += 'chr:{},base_total_loops:{},base_specific_loops:{},base_shared_loops:{},target_total_loops:{},target_specific_loops:{},target_shared_loops:{},base-target_overlap_loops:{}----'.format(
+        #     chromosome_id,
+        #     base_loops.shape[0],
+        #     base_specific_loops.shape[0],
+        #     base_overlapping_loops.shape[0],
+        #     target_loops.shape[0],
+        #     target_specific_loops.shape[0],
+        #     target_overlapping_loops.shape[0],
+        #     base_target_overlap_loops.shape[0]
+        # )
+        
+        # results_string += 'chr:{},base_total_borders:{},base_specific_borders:{},base_shared_borders:{},target_total_borders:{},target_specific_borders:{},target_shared_borders:{},base-target_overlap_borders:{}----'.format(
+        #     chromosome_id,
+        #     base_borders.shape[0],
+        #     base_specific_borders.shape[0],
+        #     base_overlapping_borders.shape[0],
+        #     target_borders.shape[0],
+        #     target_specific_borders.shape[0],
+        #     target_overlapping_borders.shape[0],
+        #     base_target_overlap_borders.shape[0]
+        # )
+    
+    # results_string = 'agg_precision:{},specific_precision:{},shared_precision:{},agg_recall:{},specific_recall:{},shared_recall:{},agg_f1:{},specific_f1:{},shared_f1:{},agg_acc:{},specific_acc:{},shared_acc:{}'.format(
+    #     np.mean(rp_agg_results['precision']), np.mean(rp_specific_results['precision']), np.mean(rp_shared_results['precision']),
+    #     np.mean(rp_agg_results['recall']), np.mean(rp_specific_results['recall']), np.mean(rp_shared_results['recall']),
+    #     np.mean(rp_agg_results['f1']), np.mean(rp_specific_results['f1']), np.mean(rp_shared_results['f1']),
+    #     np.mean(rp_agg_results['acc']), np.mean(rp_specific_results['precision']), np.mean(rp_shared_results['acc']),
+    # )
+    compiled_results = {}
+    
+    for analysis_type in results.keys():
+        if analysis_type not in compiled_results.keys():
+            compiled_results[analysis_type] = {}
+        for feature_type in results[analysis_type].keys():
+            if feature_type not in compiled_results[analysis_type].keys():
+                compiled_results[analysis_type][feature_type] = {}
+            for metric in results[analysis_type][feature_type].keys():
+                if metric not in compiled_results[analysis_type][feature_type].keys():
+                    compiled_results[analysis_type][feature_type][metric] = 0
+                compiled_results[analysis_type][feature_type][metric] = np.mean(results[analysis_type][feature_type][metric])
+
+
+
+
+    # compiled_results = {}
+    # for rp in rp_results.keys():
+    #     print('{}\t{}\t{}\t{}\t{}'.format(
+    #         rp,
+    #         np.mean(rp_results[rp]['precision']),
+    #         np.mean(rp_results[rp]['recall']),
+    #         np.mean(rp_results[rp]['f1']),
+    #         np.mean(rp_results[rp]['accuracy'])
+    #     ))
+        
+        # compiled_results[rp] = {
+        #     'recall': np.mean(rp_results[rp]['recall']),
+        #     'precision': np.mean(rp_results[rp]['precision']),
+        #     'f1': np.mean(rp_results[rp]['f1']),
+        #     'accuracy': np.mean(rp_results[rp]['accuracy'])
+        # }
+    
+
+
+    return '{}:{}'.format(experiment_name, compiled_results)

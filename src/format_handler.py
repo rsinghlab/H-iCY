@@ -53,6 +53,8 @@ def get_hic_file_header(path_to_hic_file):
         @params: path_to_hic_file <string>, path to the .hic file
         @returns <dict> a dictionary that contains the statistics contained in the HiC file header
     '''
+    print(hic_reader.read_hic_header(path_to_hic_file))
+    
     return hic_reader.read_hic_header(path_to_hic_file)['Attributes']['statistics']
 
 
@@ -89,40 +91,21 @@ def extract_npz_chromosomal_files_from_hic_file(path_to_hic_file, output_path,
 ####################################### .npz to .cool conversion functions ###########################################################
 
 def create_genomic_bins(
-    chromosome_name,
-    resolution,
-    size,
-    output_type='bed',
-    max_size_type ='bin'):
+        chromosome_name,
+        resolution,
+        size
+    ):
     
     """
     The only currently supported type is 'bed' format which is chromosome_id, start, end
     So the function requires input of 'chromosome_name' chromosome name and 'resolution' resolution of of the file. 
     This function also requires size of the chromosome to estimate the maximum number of bins
     """
-
-    chr_names = []
-    starts = []
-    ends = []
-
-    if max_size_type == 'bin':
-        number_of_bins = size
-    elif max_size_type == 'size':
-        number_of_bins = math.ceil(size/resolution)
-    else:
-        print("Invalid max_size_type value provided. This parameter can only take 'bin' or 'size'")
-        exit(1)
     
-    start = 0
-    end = resolution
+    chr_names = np.array([chromosome_name]*size)
+    starts = (np.arange(0, size, 1, dtype=int))*resolution
+    ends = (np.arange(1, size+1, 1, dtype=int))*resolution
     
-    for _ in range(number_of_bins):
-        chr_names.append(chromosome_name)
-        starts.append(start)
-        ends.append(end)
-        start = end
-        end += resolution
-
     bins = {
         'chrom': chr_names,
         'start': starts,
@@ -135,35 +118,20 @@ def create_genomic_bins(
 
 
 
-def create_genomic_pixels(
-    dense_matrix, 
-    output_type='bed',):
+def create_genomic_pixels(dense_matrix):
     """
         Converts a dense matrix into a .bed style sparse matrix file
         @params: dense_matrix <np.array>, input dense matrix
         @params: output_type <string>, output type, currently only supported style is bed style
     """
-    width, height = dense_matrix.shape
-
-    bin_ones = []
-    bin_twos = []
-    counts = []
-
-    for i in range(width):
-        for j in range(height):
-            if dense_matrix[i][j] == 0:
-                continue
-            if i > j:
-                continue
-            if dense_matrix[i][j] < 0:
-                count = 0
-            else:
-                count =  dense_matrix[i][j]
-
-
-            bin_ones.append(i)
-            bin_twos.append(j)
-            counts.append(dense_matrix[i][j])
+    
+    lower_triangular_matrix_coordinates = np.tril_indices(dense_matrix.shape[0], k=-1)
+    dense_matrix[lower_triangular_matrix_coordinates] = 0
+    
+    non_zero_indexes = np.nonzero(dense_matrix)
+    bin_ones = non_zero_indexes[0]
+    bin_twos = non_zero_indexes[1]
+    counts = dense_matrix[np.nonzero(dense_matrix)]
     
     pixels = {
         'bin1_id': bin_ones,
@@ -202,6 +170,8 @@ def create_cool_file_from_numpy(
         @chromosome_name: <string> name of the chromosome for example: chr21 
         @resolution: <int> resolution at which we have sampled the input dense array
     '''
+    print('Generating Cooler file')
+    
     # loading the file, we always assume correct full input file path
     
     dense_data, data_key = read_npz_file(numpy_file_path)
@@ -211,15 +181,15 @@ def create_cool_file_from_numpy(
 
     h, w = dense_data.shape
 
-    dense_hic_file_genomic_bins = create_genomic_bins(chromosome_name, resolution, h, max_size_type='bin')
+    dense_hic_file_genomic_bins = create_genomic_bins(chromosome_name, resolution, h)
     dense_hic_file_pixels_in_bins = create_genomic_pixels(dense_data)
-
+    
     # This generates a cooler file in the provided output file path
     cooler.create_cooler(output_file_path, dense_hic_file_genomic_bins, dense_hic_file_pixels_in_bins,
                         dtypes={"count":"int"}, 
                         assembly="hg19")
 
-    balance_cooler_file(output_file_path)
+    #balance_cooler_file(output_file_path)
     
 
 

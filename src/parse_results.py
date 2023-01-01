@@ -5,6 +5,8 @@ import pandas as pd
 import os
 import seaborn as sns
 import math
+from scipy import stats
+
 import csv
 from scipy.stats import ttest_ind
 sns.set_context('talk')
@@ -32,6 +34,7 @@ def parse_results_from_file(file_path):
 
         results = ast.literal_eval(':'.join(data[2:]))
         
+
         if dataset not in parsed_results.keys():
             parsed_results[dataset] = {}
 
@@ -40,7 +43,8 @@ def parse_results_from_file(file_path):
         
         for result in results:
             if result not in parsed_results[dataset][model].keys():
-                parsed_results[dataset][model][result] = results[result]
+                
+                parsed_results[dataset][model][result] = np.mean(results[result])
 
     
 
@@ -901,9 +905,13 @@ def create_toe_to_toe_comparison_bar_chart(data, metric, output_path):
     plt.clf()
 
 def parse_result_string(string):
+    print(string)
+
     method = string.split(':')[0]
     dataset = string.split(':')[1]
     results = ast.literal_eval(':'.join(string.split(':')[2:]))
+
+
     return method, dataset, results
 
 def condense_results(result_strings):
@@ -951,6 +959,31 @@ def condense_sig_inter_results(result_strings):
     return results
     
             
+def condense_sig_inter_results(result_strings):
+    results = {}
+    for result in result_strings:
+        method, dataset, metrics = parse_result_string(result)
+        if dataset not in results.keys():
+            results[dataset] = {}
+        
+        for stat in metrics.keys():
+            if stat not in results[dataset].keys():
+                results[dataset][stat] = {}
+            
+            if 'x-values' not in results[dataset][stat].keys():
+                results[dataset][stat]['x-values'] = list(metrics[stat].keys())
+            
+            for cutoff in metrics[stat].keys():
+
+                if method not in results[dataset][stat].keys():
+                    results[dataset][stat][method] = []
+                
+                results[dataset][stat][method].append(np.mean(metrics[stat][cutoff]))
+
+    return results
+  
+
+
 
 def results_file_parser(results_file_path):
     # Read results file 
@@ -963,14 +996,18 @@ def results_file_parser(results_file_path):
     bio_analysis_result_string = list(filter(lambda x: 'hicrep' in x or 'genomedisco' in x, results))
     reconstruction_result_string = list(filter(lambda x: '3d_reconstruction_tmscore' in x, results))
     sig_inter_result_string = list(filter(lambda x: 'p-values' in x, results))
+    insulation_score_result_string = list(filter(lambda x: 'insulation_score' in x, results))
+
     
     correlation_results = condense_results(correlation_result_strings)
     bio_analysis_result = condense_results(bio_analysis_result_string)
     reconstruction_result = condense_results(reconstruction_result_string)
-    sig_inter_results = condense_sig_inter_results(sig_inter_result_string)
+    insulation_results = condense_results(insulation_score_result_string)
+
+    #sig_inter_results = condense_sig_inter_results(sig_inter_result_string)
 
     
-    return correlation_results, bio_analysis_result, reconstruction_result, sig_inter_results
+    return correlation_results, bio_analysis_result, reconstruction_result, insulation_results
 
 
 
@@ -1049,40 +1086,50 @@ def create_line_graph_downsampled_datasets_comparison(datasets, output_name, met
         'gaussian-smoothing': [],
         'hicplus': [],
         'hicnn': [],
+        'hicnn2':[],
         'deephic': [],
         'vehicle': []
     }
     x_values = []
+
+    print(datasets.keys())
+
+
     for dataset in datasets.keys():
-        print(dataset.split('synthetic'))
+        if dataset == 'synthetic8':
+            continue
+        
 
         dataset_ratio = dataset.split('synthetic')[1]
         x_values.append(dataset_ratio)
         dataset_results = datasets[dataset]
+        print(dataset_results)
+
         for key in lines.keys():
-            if key in ['hicnn', 'hicplus', 'deephic']:
-                model = key+dataset_ratio
+            if key in ['hicnn', 'hicnn2', 'hicplus', 'deephic']:
+                model = key+'-'+dataset_ratio
             else:
                 model = key
-            if model == 'hicplus100':
-                continue
             
             lines[key].append(dataset_results[metric][model])
 
 
             #lines[key].append(dataset_results[model, 'genomedisco'])
     
-    print(lines)
+    print(lines, x_values)
 
     for line in lines.keys(): 
         if line == 'gaussian-smoothing':
             plt.plot(x_values, lines[line], color='#E69F00', linewidth=4.0, marker="o", markersize=20)
         
         if line == 'hicplus':
-            plt.plot(x_values[:-1], lines[line], color='#56B4E9', linewidth=4.0, marker='s', markersize=20)
+            plt.plot(x_values, lines[line], color='#56B4E9', linewidth=4.0, marker='s', markersize=20)
         
         if line == 'hicnn':
             plt.plot(x_values, lines[line], color='#009E73', linewidth=4.0, marker='*', markersize=20)
+        
+        if line == 'hicnn2':
+            plt.plot(x_values, lines[line], color='#FF9070', linewidth=4.0, marker='p', markersize=20)
         
         if line == 'deephic':
             plt.plot(x_values, lines[line], color='#F0E442', linewidth=4.0, marker='^', markersize=20)
@@ -1102,7 +1149,7 @@ def create_line_graph_downsampled_datasets_comparison(datasets, output_name, met
     #plt.yscale('log')
     plt.tight_layout()
 
-    plt.savefig('results/figures/{}_{}.png'.format(metric, output_name))
+    plt.savefig('results/figures/{}_{}'.format(metric, output_name))
     plt.cla()
     plt.clf()
     plt.close()
@@ -1132,9 +1179,10 @@ def create_line_graph_real_world_datasets_downsampled_models(input_path):
     
     print(data['HiCPlus'], data['HiCNN'])
 
-    plt.plot(x_values, data['Smoothing'], color='#E69F00', label='Smoothing', linewidth=4.0, marker="o", markersize=20)
+    plt.plot(x_values,  data['Smoothing'], color='#E69F00', label='Smoothing', linewidth=4.0, marker="o", markersize=20)
     plt.plot(x_values,  data['HiCPlus'], color='#56B4E9', label='HiCPlus', linewidth=4.0, marker='s', markersize=20)
     plt.plot(x_values,  data['HiCNN'], color='#009E73', label='HiCNN', linewidth=4.0, marker='*', markersize=20)
+    plt.plot(x_values,  data['HiCNN2'], color='#FF9070', label='HiCNN2', linewidth=4.0, marker='p', markersize=20)
     plt.plot(x_values,  data['DeepHiC'], color='#F0E442', label='DeeHiC', linewidth=4.0, marker='^', markersize=20)
     plt.plot(x_values,  data['VeHiCLe'], color='#0072B2', label = 'VeHiCle', linewidth=4.0, marker='d', markersize=20)
 
@@ -1147,7 +1195,7 @@ def create_line_graph_real_world_datasets_downsampled_models(input_path):
     plt.xticks(fontsize= 25)
     plt.ylabel('GenomeDISCO', size=30)
     plt.yticks(fontsize= 25)
-    #plt.legend(fontsize=25)
+    plt.legend(fontsize=25)
 
     plt.savefig('results/figures/downsampled-models_real-world_results_genomedisco.png')
     plt.cla()
@@ -1158,23 +1206,26 @@ def create_line_graph_real_world_datasets_downsampled_models(input_path):
 def create_line_graph_real_world_datasets_retrained_models(input_path):
     reader = csv.reader(open(input_path, 'r'))
     data = {}
-    x_values = [0,0,0,0,0,0]
+    #x_values = [0,0,0,0,0,0,0]
     for idx, row in enumerate(reader):
+        print(idx, row)
         if idx == 0:
             row = list(filter(lambda x: x!= '', row))
-            #x_values = row
+            x_values = row
         else:
             method = row[0]
             data[method] = list(map(lambda x: float(x), row[1:]))
 
     
 
-    plt.plot(x_values,  data['Downsampled-Best'], color='#009E73', label='HiCNN-Downsampled', linewidth=4.0, marker='*', markersize=20)
-    plt.plot(x_values,  data['Real-World-LRC'], color='#D55E00', label='HiCNN-LRC', linewidth=4.0, marker='X', markersize=20)
+    plt.plot(x_values,  data['HiCNN-Baseline'], color='#009E73', label='HiCNN-Downsampled', linewidth=4.0, marker='*', markersize=20)
+    plt.plot(x_values,  data['HiCNN-LRC-1'], color='#FF5E00', label='HiCNN-LRC-1', linewidth=4.0, marker='X', markersize=20)
+    plt.plot(x_values,  data['HiCNN-LRC-3'], color='#C10001', label='HiCNN-LRC-3', linewidth=4.0, marker='<', markersize=20)
+    plt.plot(x_values,  data['HiCNN-LRC-4'], color='#000F21', label='HiCNN-LRC-4', linewidth=4.0, marker='>', markersize=20)
     
     fig = plt.gcf()
     fig.tight_layout()
-    fig.set_size_inches(15,7)
+    fig.set_size_inches(11,7)
 
 
     plt.xlabel('Downsampling Ratio', size=30)
@@ -1189,14 +1240,14 @@ def create_line_graph_real_world_datasets_retrained_models(input_path):
     plt.close()
 
 
-def create_genome_disco_toe_to_toe_bargraph(data):
+def create_genome_disco_toe_to_toe_bargraph(data, oname):
     labels = [
         ' ',
         '  '
     ]
     colors = [
-        '#882255',
-        '#009E73'
+        '#009E73',
+        '#C10001'
     ]  
     data_averages = []
     for x in data:
@@ -1217,6 +1268,6 @@ def create_genome_disco_toe_to_toe_bargraph(data):
     fig = plt.gcf()
     fig.tight_layout()
     fig.set_size_inches(7,7)
-    fig.savefig('results/figures/downsampled-models_real-world_results_genomedisco-bargraph.png')
+    fig.savefig('results/figures/{}_genomedisco-bargraph.png'.format(oname))
     plt.cla()
     plt.clf()

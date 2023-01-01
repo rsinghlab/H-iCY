@@ -174,11 +174,22 @@ def compute_correlation_metrics_on_experiment_directory(
         target_file = os.path.join(target_files_path, 'chr{}.npz'.format(chromosome_id))
         if verbose: print("Base file: {}\nTarget File: {}".format(base_file, target_file))
         
-        print(chromosome_id, base_file, base_cutoff)
+        
+        if not (os.path.exists(base_file) and os.path.exists(target_file)):
+            print("Missing Chromosome files")
+            continue
 
+        
+        comapct_indices_base =  np.load(base_file, allow_pickle=True)['compact']
+        compact_indices_target = np.load(target_file, allow_pickle=True)['compact']
 
-        y, _ = ops.matrix_division(chromosome_id, base_file, base_cutoff, 200, 200, 190, verbose=False)
-        y_bar, _ = ops.matrix_division(chromosome_id, target_file, target_cutoff, 200, 200, 190, verbose=False)
+        compact_indexes = list(set.intersection(set(comapct_indices_base), set(compact_indices_target)))
+
+        base_data = ops.normalize(base_file, base_cutoff, compact_indexes, verbose=verbose)
+        y, _ = ops.divide(base_data, str(chromosome_id), 200, 200, 190, verbose=verbose)
+
+        target_data = ops.normalize(target_file, target_cutoff, compact_indexes, verbose=verbose)
+        y_bar, _ = ops.divide(target_data, str(chromosome_id), 200, 200, 190, verbose=verbose)
         
         for key, eval_func in list_of_eval_funcs.items():
             mean_value = evaluate(y_bar, y, eval_func)['stats'][0]

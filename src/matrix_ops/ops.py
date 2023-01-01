@@ -4,10 +4,40 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn.functional as F
+from scipy.sparse import coo_matrix
 
 
+def dense2tag(matrix):
+    """converting a square matrix (dense) to coo-based tag matrix"""
+    matrix = np.triu(matrix)
+    tag_len = np.sum(matrix)
+    tag_mat = np.zeros((tag_len, 2), dtype=np.int)
+    coo_mat = coo_matrix(matrix)
+    row, col, data = coo_mat.row, coo_mat.col, coo_mat.data
+    start_idx = 0
+    for i in range(len(row)):
+        end_idx = start_idx + data[i]
+        tag_mat[start_idx:end_idx, :] = (row[i], col[i])
+        start_idx = end_idx
+    return tag_mat, tag_len
 
+def tag2dense(tag, nsize):
+    """coverting a coo-based tag matrix to densed square matrix."""
+    coo_data, data = np.unique(tag, axis=0, return_counts=True)
+    row, col = coo_data[:, 0], coo_data[:, 1]
+    dense_mat = coo_matrix((data, (row, col)), shape=(nsize, nsize)).toarray()
+    dense_mat = dense_mat + np.triu(dense_mat, k=1).T
+    return dense_mat
 
+def downsampling(matrix, down_ratio, verbose=False):
+    """downsampling method"""
+    if verbose: print(f"[Downsampling] Matrix shape is {matrix.shape}")
+    tag_mat, tag_len = dense2tag(matrix)
+    sample_idx = np.random.choice(tag_len, tag_len//down_ratio)
+    sample_tag = tag_mat[sample_idx]
+    if verbose: print(f'[Downsampling] Sampling 1/{down_ratio} of {tag_len} reads')
+    down_mat = tag2dense(sample_tag, matrix.shape[0])
+    return down_mat
 
 def compactM(matrix, compact_idx, verbose=False):
     """
@@ -227,6 +257,8 @@ def normalize(matrix_file_path, cut_off, compact_idxs=[], compact=True, verbose=
     if verbose: 
         print("Clamping and rescaling with cutoff value: {}".format(cut_off))
     
+    #cut_off = np.percentile(matrix_data, cut_off)
+
     #Clamping
     matrix_data = np.minimum(cut_off, matrix_data)
     matrix_data = np.maximum(matrix_data, 0)
