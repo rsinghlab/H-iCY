@@ -1,4 +1,4 @@
-# H-iCY
+# Hi-CY
 
 
 ## Abstract
